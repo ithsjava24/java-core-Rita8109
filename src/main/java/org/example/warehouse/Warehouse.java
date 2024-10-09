@@ -5,15 +5,28 @@ import java.util.*;
 
 public class Warehouse {
 
-    private Warehouse() {
-        super();
+    private static final Map<String, Warehouse> WAREHOUSES = new HashMap<>();
+
+    private String name;
+
+    private Warehouse(String name) {
+        this.name = name;
     }
+
     public static Warehouse getInstance(String name) {
-        throw new UnsupportedOperationException("not implemented");
+        Warehouse instance;
+
+        if(WAREHOUSES.containsKey(name != null ? name : "")) {
+            instance = WAREHOUSES.get(name);
+        } else {
+            instance = new Warehouse(name);
+            WAREHOUSES.put(name, instance);
+        }
+        return instance;
     }
 
     public static Warehouse getInstance() {
-        throw new UnsupportedOperationException("not implemented");
+        return getInstance("");
     }
 
     public boolean isEmpty() {
