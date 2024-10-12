@@ -2,6 +2,7 @@ package org.example.warehouse;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Warehouse {
 
@@ -9,10 +10,12 @@ public class Warehouse {
 
     private final String name;
     private final Map<UUID, ProductRecord> products;
+    private final List<ProductRecord> changedProducts;
 
     private Warehouse(String name) {
         this.name = name;
-        this.products = new HashMap<>();
+        this.products = new LinkedHashMap<>();
+        this.changedProducts = new ArrayList<>();
     }
 
     public static Warehouse getInstance(String name) {
@@ -27,17 +30,21 @@ public class Warehouse {
         return new Warehouse(null);
     }
 
+    public String getName() {
+        return name;
+    }
+
     public boolean isEmpty() {
         return products.isEmpty();
     }
 
     public Collection<ProductRecord> getProducts() {
-        return Collections.unmodifiableCollection(products.values());
+        return List.of(products.values().toArray(new ProductRecord[]{}));
     }
 
     public ProductRecord addProduct(UUID id, String name, Category category, BigDecimal price) {
 
-        if(products.containsKey(id)) {
+        if (products.containsKey(id)) {
             throw new IllegalArgumentException("Product with that id already exists, use updateProduct for updates.");
         }
 
@@ -52,19 +59,34 @@ public class Warehouse {
     }
 
     public void updateProductPrice(UUID uuid, BigDecimal price) {
-        throw new UnsupportedOperationException("not implemented");
+
+        if (!products.containsKey(uuid)) {
+            throw new IllegalArgumentException("Product with that id doesn't exist.");
+        }
+
+        ProductRecord old = products.get(uuid);
+        changedProducts.add(old);
+        products.put(uuid, new ProductRecord(old.uuid(), old.name(), old.category(), price));
     }
 
     public Collection<ProductRecord> getChangedProducts() {
-        throw new UnsupportedOperationException("not implemented");
+        return changedProducts;
     }
 
     public Map<Category, List<ProductRecord>> getProductsGroupedByCategories() {
-        throw new UnsupportedOperationException("not implemented");
+        Map<Category, List<ProductRecord>> returnValue = new HashMap<>();
+        for (ProductRecord product : products.values()) {
+            returnValue.computeIfAbsent(product.category(), _ -> new ArrayList<>());
+            returnValue.get(product.category()).add(product);
+        }
+        return returnValue;
     }
 
     public Collection<ProductRecord> getProductsBy(Category category) {
-        throw new UnsupportedOperationException("not implemented");
+        return products.values()
+                .stream()
+                .filter(p -> p.category().equals(category))
+                .collect(Collectors.toUnmodifiableSet());
     }
 }
 
