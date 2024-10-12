@@ -7,42 +7,48 @@ public class Warehouse {
 
     private static final Map<String, Warehouse> WAREHOUSES = new HashMap<>();
 
-    private String name;
+    private final String name;
+    private final Map<UUID, ProductRecord> products;
 
     private Warehouse(String name) {
         this.name = name;
+        this.products = new HashMap<>();
     }
 
     public static Warehouse getInstance(String name) {
-        Warehouse instance;
-
-        if(WAREHOUSES.containsKey(name != null ? name : "")) {
-            instance = WAREHOUSES.get(name);
-        } else {
-            instance = new Warehouse(name);
-            WAREHOUSES.put(name, instance);
-        }
-        return instance;
+        return WAREHOUSES.computeIfAbsent(name, Warehouse::new);
+//        if(!WAREHOUSES.containsKey(name)) {
+//            WAREHOUSES.put(name, new Warehouse(name));
+//        }
+//        return WAREHOUSES.get(name);
     }
 
     public static Warehouse getInstance() {
-        return getInstance("");
+        return new Warehouse(null);
     }
 
     public boolean isEmpty() {
-        throw new UnsupportedOperationException("not implemented");
+        return products.isEmpty();
     }
 
     public Collection<ProductRecord> getProducts() {
-        throw new UnsupportedOperationException("not implemented");
+        return Collections.unmodifiableCollection(products.values());
     }
 
     public ProductRecord addProduct(UUID id, String name, Category category, BigDecimal price) {
-        throw new UnsupportedOperationException("not implemented");
+
+        if(products.containsKey(id)) {
+            throw new IllegalArgumentException("Product with that id already exists, use updateProduct for updates.");
+        }
+
+        ProductRecord product = new ProductRecord(id != null ? id : UUID.randomUUID(), name, category, price);
+        products.put(product.uuid(), product);
+
+        return product;
     }
 
     public Optional<ProductRecord> getProductById(UUID id) {
-        throw new UnsupportedOperationException("not implemented");
+        return Optional.ofNullable(products.get(id));
     }
 
     public void updateProductPrice(UUID uuid, BigDecimal price) {
