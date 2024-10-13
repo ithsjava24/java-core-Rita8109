@@ -6,12 +6,13 @@ import java.util.stream.Collectors;
 
 public class Warehouse {
 
+    // Storage of existing warehouses
     private static final Map<String, Warehouse> WAREHOUSES = new HashMap<>();
+    private final String name; // Warehouse name
+    private final Map<UUID, ProductRecord> products; // Warehouse products
+    private final List<ProductRecord> changedProducts; // Products that has had their prices changed
 
-    private final String name;
-    private final Map<UUID, ProductRecord> products;
-    private final List<ProductRecord> changedProducts;
-
+    // Private Constructor
     private Warehouse(String name) {
         this.name = name;
         this.products = new LinkedHashMap<>();
@@ -19,11 +20,9 @@ public class Warehouse {
     }
 
     public static Warehouse getInstance(String name) {
+        // computeIfAbsent will creat and return new Warehouse if missing or return existing Warehouse
         return WAREHOUSES.computeIfAbsent(name, Warehouse::new);
-//        if(!WAREHOUSES.containsKey(name)) {
-//            WAREHOUSES.put(name, new Warehouse(name));
-//        }
-//        return WAREHOUSES.get(name);
+
     }
 
     public static Warehouse getInstance() {
@@ -38,6 +37,10 @@ public class Warehouse {
         return products.isEmpty();
     }
 
+    /**
+     * This method returns an unmodifiable collection of all products in warehouse
+     * @return collection of products
+     */
     public Collection<ProductRecord> getProducts() {
         return List.of(products.values().toArray(new ProductRecord[]{}));
     }
@@ -86,7 +89,7 @@ public class Warehouse {
         return products.values()
                 .stream()
                 .filter(p -> p.category().equals(category))
-                .collect(Collectors.toUnmodifiableSet());
+                .collect(Collectors.toSet());
     }
 }
 
